@@ -1,0 +1,68 @@
+# Original from https://raw.githubusercontent.com/overextended/ox_lib/master/.github/workflows/release.yml
+# Modified to work with this project
+name: Build Release
+
+on:
+    push:
+        tags:
+            - 'v*.*.*'
+
+jobs:
+    create-release:
+        name: Build and Create Tagged Release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Install archive tools
+              run: sudo apt install zip
+
+            - name: Checkout source code
+              uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
+                  ref: ${{ github.event.repository.default_branch }}
+
+            - uses: pnpm/action-setup@v2.0.1
+              with:
+                  version: 8.6.1
+
+            - name: Setup node
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 16.x
+                  cache: 'pnpm'
+                  cache-dependency-path: 'resource/web/pnpm-lock.yaml'
+
+            - name: Set env
+              run: echo "NAME=unofficial_fivem_spotify_integration" >> $GITHUB_ENV
+
+            - name: Install dependencies
+              run: pnpm install
+              working-directory: resource/web
+
+            - name: Run build
+              run: pnpm build
+              working-directory: resource/web
+              env:
+                  CI: false
+
+            - name: Bundle files
+              run: |
+                  mkdir -p ./temp/${{ env.NAME }}
+                  mkdir -p ./temp/${{ env.NAME }}/web/
+                  cp ./{EULA.md,LICENSE.md,PRIVACY-POLICY.md,README.md} ./temp/${{ env.NAME }}
+                  cp -r ./resource/{client,shared,stream,fxmanifest.lua} ./temp/${{ env.NAME }}
+                  cp -r ./resource/web/build ./temp/${{ env.NAME }}/web/
+                  cd ./temp && zip -r ../${{ env.NAME }}.zip ./${{ env.NAME }}
+
+            - name: Create Release
+              uses: 'marvinpinto/action-automatic-releases@v1.2.1'
+              id: auto_release
+              with:
+                  repo_token: '${{ secrets.GITHUB_TOKEN }}'
+                  title: ${{ github.ref_name }} Release
+                  prerelease: ${{ contains(github.ref_name, '-pre') }}
+                  files: ${{ env.NAME }}.zip
+
+              env:
+                  CI: false
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
