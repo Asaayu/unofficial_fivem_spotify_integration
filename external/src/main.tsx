@@ -1,5 +1,3 @@
-import './wdyr'; // This must be imported first
-
 import { BRAND } from '@asaayu-base/brand';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';

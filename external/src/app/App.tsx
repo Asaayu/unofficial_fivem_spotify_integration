@@ -43,17 +43,6 @@ const DataWrapper = (props: { children: React.ReactNode | React.ReactNode[] }) =
 };
 
 export const App = () => {
-    // const peer = useContext(PeerContext);
-
-    // const location = useLocation();
-    // useEffect(() => {
-    //     const path = location.pathname;
-    //     if (path === '/player') return;
-
-    //     // Reset the connection when the user navigates away from the player
-    //     peer.setConnect(false);
-    // }, [location.pathname, peer]);
-
     return (
         <Suspense fallback={<Loading />}>
             <Box
